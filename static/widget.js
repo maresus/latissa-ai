@@ -1,8 +1,11 @@
 (function() {
   'use strict';
 
+  var _scriptEl = document.currentScript || document.querySelector('script[src*="widget.js"]');
+  var _apiUrl = ((_scriptEl && _scriptEl.getAttribute('data-api-base')) || window.location.origin) + '/chat';
+
   const CONFIG = {
-    apiUrl: 'https://latissa.up.railway.app/chat',
+    apiUrl: _apiUrl,
     brandColor: '#3a322e',
     brandColorHover: '#2a2420',
     accentColor: '#b9a89c',
@@ -214,7 +217,7 @@
       border: 1px solid #d2c4b8;
       border-radius: 24px;
       padding: 11px 18px;
-      font-size: 14px;
+      font-size: 16px;
       outline: none;
       transition: border-color 0.15s;
       background: #fdf9f6;
@@ -363,7 +366,7 @@
       <div id="la-widget-messages" role="log" aria-live="polite" aria-label="Pogovor z digitalnim pomočnikom"></div>
       <div id="la-widget-input-area">
         <input type="text" id="la-widget-input" placeholder="${CONFIG.placeholder}" aria-label="Vnesite vprašanje">
-        <button id="la-widget-send" aria-label="Pošlji sporočilo">${icons.send}</button>
+        <button id="la-widget-send" aria-label="Pošlji">${icons.send}</button>
       </div>
       <div id="la-widget-disclaimer">🤖 Ta asistent je umetna inteligenca (AI) — EU AI Act čl. 50. Odgovori so informativne narave. Za naročila obiščite <a href="https://latissa.si" target="_blank">latissa.si</a>.</div>
       <div id="la-widget-powered">built by: <a href="https://spoznaj-ai.si" target="_blank">spoznaj-ai.si</a></div>
@@ -500,18 +503,52 @@
     return d.innerHTML.replace(/\n/g, '<br>');
   }
 
+  function _sanitize(html) {
+    var ALLOWED = {P:1,BR:1,STRONG:1,EM:1,A:1,UL:1,LI:1};
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    (function walk(node) {
+      for (var i = node.children.length - 1; i >= 0; i--) {
+        var el = node.children[i];
+        if (!ALLOWED[el.tagName]) {
+          node.replaceChild(document.createTextNode(el.textContent), el);
+        } else {
+          Array.from(el.attributes || []).forEach(function(a) {
+            if (/^on/i.test(a.name)) el.removeAttribute(a.name);
+          });
+          if (el.tagName === 'A') {
+            var h = el.getAttribute('href') || '';
+            if (!/^(?:https?:|mailto:|tel:)/.test(h)) {
+              node.replaceChild(document.createTextNode(el.textContent), el);
+              continue;
+            }
+          }
+          walk(el);
+        }
+      }
+    })(tmp);
+    return tmp.innerHTML;
+  }
+
   function _renderMd(text) {
+    var _ls = 'color:' + CONFIG.brandColor + ';text-decoration:underline;';
     var e = (function(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; })(text);
     e = e.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    e = e.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:' + CONFIG.brandColor + ';text-decoration:underline;">$1</a>');
-    e = e.replace(/(?<!=["'])(https?:\/\/[^\s<>"')\]]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:' + CONFIG.brandColor + ';text-decoration:underline;">$1</a>');
+    e = e.replace(/\b([\w.+%-]+@[\w-]+\.[a-z]{2,6})\b/gi, function(m, addr) {
+      return '<a href="mailto:' + addr + '" style="' + _ls + '">' + addr + '</a>';
+    });
+    e = e.replace(/\b(0\d{2}[\s ]?\d{3}[\s ]?\d{3})\b/g, function(m, num) {
+      return '<a href="tel:' + num.replace(/[\s ]/g, '') + '" style="' + _ls + '">' + num + '</a>';
+    });
+    e = e.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
+    e = e.replace(/(?<!=["'])(https?:\/\/[^\s<>"')\]]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
     e = e.replace(/((?:^|\n)- [^\n]+)+/g, function(block) {
       var items = block.trim().split(/\n/).map(function(line) { return '<li>' + line.replace(/^- /, '') + '</li>'; }).join('');
       return '<ul style="margin:6px 0 6px 16px;padding:0;">' + items + '</ul>';
     });
     e = e.replace(/\n\n+/g, '</p><p style="margin:6px 0;">');
     e = e.replace(/\n/g, '<br>');
-    return '<p style="margin:0;">' + e + '</p>';
+    return _sanitize('<p style="margin:0;">' + e + '</p>');
   }
 
   async function _sendMessage() {
