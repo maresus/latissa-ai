@@ -150,7 +150,12 @@
       border: none;
       color: #fff;
       cursor: pointer;
-      padding: 7px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
       border-radius: 8px;
       transition: background 0.15s;
     }
@@ -503,6 +508,12 @@
     return d.innerHTML.replace(/\n/g, '<br>');
   }
 
+  function _outsideTags(html, fn) {
+    return html.split(/(<a\b[^>]*>[\s\S]*?<\/a>)/gi).map(function(part, i) {
+      return (i % 2 === 0) ? fn(part) : part;
+    }).join('');
+  }
+
   function _sanitize(html) {
     var ALLOWED = {P:1,BR:1,STRONG:1,EM:1,A:1,UL:1,LI:1};
     var tmp = document.createElement('div');
@@ -541,7 +552,9 @@
       return '<a href="tel:' + num.replace(/[\s ]/g, '') + '" style="' + _ls + '">' + num + '</a>';
     });
     e = e.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
-    e = e.replace(/(?<!=["'])(https?:\/\/[^\s<>"')\]]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
+    e = _outsideTags(e, function(txt) {
+      return txt.replace(/(https?:\/\/[^\s<>"')\]]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
+    });
     e = e.replace(/((?:^|\n)- [^\n]+)+/g, function(block) {
       var items = block.trim().split(/\n/).map(function(line) { return '<li>' + line.replace(/^- /, '') + '</li>'; }).join('');
       return '<ul style="margin:6px 0 6px 16px;padding:0;">' + items + '</ul>';

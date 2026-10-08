@@ -39,7 +39,7 @@ def chat(
     messages = [{"role": "system", "content": system_prompt}]
 
     if history:
-        for msg in history[-6:]:
+        for msg in history[-20:]:
             messages.append(msg)
 
     messages.append({"role": "user", "content": message})
