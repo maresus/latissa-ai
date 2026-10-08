@@ -47,6 +47,14 @@ async def _set_admin_cookie(request: _Request, call_next):
     return response
 
 
+@app.middleware("http")
+async def _widget_cache(request: _Request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/static/widget.js":
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
