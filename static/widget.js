@@ -177,7 +177,7 @@
       max-width: 85%;
       padding: 11px 15px;
       border-radius: 16px;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.5;
       word-wrap: break-word;
     }
@@ -553,7 +553,11 @@
     });
     e = e.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
     e = _outsideTags(e, function(txt) {
-      return txt.replace(/(https?:\/\/[^\s<>"')\]]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="' + _ls + '">$1</a>');
+      return txt.replace(/(https?:\/\/[^\s<>"')\]]+)/g, function(m, url) {
+        var trail = '';
+        var clean = url.replace(/[.,;:!?)\]]+$/, function(p) { trail = p; return ''; });
+        return '<a href="' + clean + '" target="_blank" rel="noopener noreferrer" style="' + _ls + '">' + clean + '</a>' + trail;
+      });
     });
     e = e.replace(/((?:^|\n)- [^\n]+)+/g, function(block) {
       var items = block.trim().split(/\n/).map(function(line) { return '<li>' + line.replace(/^- /, '') + '</li>'; }).join('');
