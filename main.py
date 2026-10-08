@@ -15,7 +15,7 @@ from app.services.db_service import init_db
 
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 
-app = FastAPI(title="Latissa AI", version="1.0.0")
+app = FastAPI(title="Latissa AI", version="1.0.0", docs_url=None, redoc_url=None)
 
 
 @app.middleware("http")
@@ -52,7 +52,7 @@ app.add_middleware(
     allow_origins=[
         "https://latissa.si",
         "https://www.latissa.si",
-        "https://latissa-ai-production.up.railway.app",
+        "https://latissa.up.railway.app",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
@@ -79,26 +79,10 @@ def health():
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Latissa AI</title>
-<style>body{font-family:system-ui;max-width:600px;margin:50px auto;padding:20px;background:#f6ece4;}
-h1{color:#3a322e;}#chat{border:1px solid #d2b9a8;height:400px;overflow-y:auto;padding:10px;margin-bottom:10px;background:#fff;border-radius:8px;}
-.user{color:#3a322e;margin:5px 0;font-weight:600;}.bot{color:#5a4a3a;margin:5px 0;white-space:pre-wrap;}
-#input{width:80%;padding:10px;border:1px solid #b9a89c;border-radius:6px;}
-button{padding:10px 20px;background:#3a322e;color:#fff;border:none;border-radius:6px;cursor:pointer;}
-</style></head><body>
-<h1>Latissa AI</h1>
-<div id="chat"></div>
-<input type="text" id="input" placeholder="Vprašajte karkoli..." onkeypress="if(event.key==='Enter')send()">
-<button onclick="send()">Pošlji</button>
-<script>
-let sid=null;const chat=document.getElementById('chat'),inp=document.getElementById('input');
-async function send(){const msg=inp.value.trim();if(!msg)return;
-chat.innerHTML+=`<div class="user">Vi: ${msg}</div>`;inp.value='';
-const r=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,session_id:sid})});
-const d=await r.json();sid=d.session_id;
-chat.innerHTML+=`<div class="bot">Bot: ${d.reply}</div>`;chat.scrollTop=chat.scrollHeight;}
-</script></body></html>"""
+    widget_html = Path("static/widget.html")
+    if widget_html.exists():
+        return HTMLResponse(content=widget_html.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Latissa AI</h1><p>Widget se nalaga...</p>")
 
 
 @app.get("/api/admin/conversations")

@@ -5,6 +5,7 @@ from pathlib import Path
 from openai import OpenAI
 
 from app.rag.search import get_context
+from app.guard import check_reply as _guard_check
 
 
 _SYSTEM_PROMPT_PATH = Path(__file__).parent / "prompts" / "system.txt"
@@ -54,4 +55,5 @@ def chat(
     if not reply:
         reply = "Oprostite, nisem razumel vprašanja. Pokličite nas: 070 733 390"
 
+    _, reply = _guard_check(reply)
     return {"reply": reply}

@@ -2,7 +2,7 @@
   'use strict';
 
   const CONFIG = {
-    apiUrl: 'https://latissa-ai-production.up.railway.app/chat',
+    apiUrl: 'https://latissa.up.railway.app/chat',
     brandColor: '#3a322e',
     brandColorHover: '#2a2420',
     accentColor: '#b9a89c',
@@ -344,6 +344,7 @@
 
     const bubble = document.createElement('button');
     bubble.id = 'la-widget-bubble';
+    bubble.setAttribute('aria-label', 'Odpri Latissin digitalni pomočnik');
     bubble.innerHTML = icons.home;
     bubble.onclick = function(e) { e.stopPropagation(); e.preventDefault(); setTimeout(_togglePanel, 0); };
 
@@ -356,13 +357,13 @@
           <h3>${CONFIG.title}</h3>
           <p>${CONFIG.subtitle}</p>
         </div>
-        <button class="la-header-btn" id="la-widget-refresh" title="Nov pogovor">${icons.refresh}</button>
-        <button class="la-header-btn" id="la-widget-close" title="Zapri">${icons.close}</button>
+        <button class="la-header-btn" id="la-widget-refresh" title="Nov pogovor" aria-label="Nov pogovor">${icons.refresh}</button>
+        <button class="la-header-btn" id="la-widget-close" title="Zapri" aria-label="Zapri pomočnika">${icons.close}</button>
       </div>
-      <div id="la-widget-messages"></div>
+      <div id="la-widget-messages" role="log" aria-live="polite" aria-label="Pogovor z digitalnim pomočnikom"></div>
       <div id="la-widget-input-area">
-        <input type="text" id="la-widget-input" placeholder="${CONFIG.placeholder}">
-        <button id="la-widget-send">${icons.send}</button>
+        <input type="text" id="la-widget-input" placeholder="${CONFIG.placeholder}" aria-label="Vnesite vprašanje">
+        <button id="la-widget-send" aria-label="Pošlji sporočilo">${icons.send}</button>
       </div>
       <div id="la-widget-disclaimer">🤖 Ta asistent je umetna inteligenca (AI) — EU AI Act čl. 50. Odgovori so informativne narave. Za naročila obiščite <a href="https://latissa.si" target="_blank">latissa.si</a>.</div>
       <div id="la-widget-powered">built by: <a href="https://spoznaj-ai.si" target="_blank">spoznaj-ai.si</a></div>
